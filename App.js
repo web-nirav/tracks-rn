@@ -1,5 +1,4 @@
 import React from "react";
-import { Text } from "react-native";
 
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
@@ -12,7 +11,12 @@ import TrackListScreen from "./src/screens/TrackListScreen";
 import TrackDetailScreen from "./src/screens/TrackeDetailScreen";
 import TrackCreateScreen from "./src/screens/TrackeCreateScreen";
 
+import ResolveAuthScreen from "./src/screens/ResolveAuthScreen";
+import { Provider as AuthProvider } from "./src/context/authContext";
+import { setNavigator } from "./src/navigationRef";
+
 const switchNavigator = createSwitchNavigator({
+  ResolveAuth: ResolveAuthScreen,
   loginFlow: createStackNavigator({
     Signup: SignupScreen,
     Signin: SigninScreen,
@@ -27,4 +31,15 @@ const switchNavigator = createSwitchNavigator({
   }),
 });
 
-export default createAppContainer(switchNavigator);
+const App = createAppContainer(switchNavigator);
+export default () => {
+  return (
+    <AuthProvider>
+      <App
+        ref={(navigator) => {
+          setNavigator(navigator);
+        }}
+      />
+    </AuthProvider>
+  );
+};
