@@ -1,6 +1,6 @@
 import "../_mockLocation";
 
-import React, { useContext } from "react";
+import React, { useContext, useCallback } from "react";
 import { StyleSheet } from "react-native";
 import { Text } from "react-native-elements";
 import { SafeAreaView, withNavigationFocus } from "react-navigation";
@@ -11,9 +11,21 @@ import useLocation from "../hooks/useLocation";
 import TrackForm from "../components/TrackForm";
 
 const TrackCreateScreen = ({ isFocused }) => {
-  const { addLocation } = useContext(LocationContext);
-  const [err] = useLocation(isFocused, addLocation); // short form of below when we have arrow function with same argument to be passed from body function
-  // const [err] = useLocation((location) => addLocation(location));
+  const {
+    state: { recording },
+    addLocation,
+  } = useContext(LocationContext);
+  // const [err] = useLocation(isFocused, addLocation); // short form of below when we have arrow function with same argument to be passed from body function
+
+  // so here we use useCallback hook which will give use callback function to pass which takes 2nd argument like useEffect which will when changes then only callback new copy will send and able to execute
+  const callback = useCallback(
+    (location) => {
+      addLocation(location, recording);
+    },
+    [recording]
+  );
+
+  const [err] = useLocation(isFocused || recording, callback);
   // console.log(isFocused);
 
   return (

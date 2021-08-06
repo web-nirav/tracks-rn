@@ -7,36 +7,42 @@ import {
 
 // shouldTrack = isFocused from TrackCreateScreen
 export default (shouldTrack, callback) => {
-
   const [err, setErr] = useState(null);
-  const [subscriber, setSubscriber] = useState(null);
-
-  const startWatching = async () => {
-    try {
-      await requestForegroundPermissionsAsync();
-      const sub = await watchPositionAsync(
-        {
-          accuracy: Accuracy.BestForNavigation,
-          timeInterval: 1000,
-          distanceInterval: 10,
-        },
-        callback
-      );
-      setSubscriber(sub);
-    } catch (e) {
-      setErr(e);
-    }
-  };
 
   useEffect(() => {
+    let subscriber;
+    // we should define this helper function inside of useEffect because we can add dependencies directly and miss sometimes when we define outside and call it from useEffect,
+    const startWatching = async () => {
+      try {
+        await requestForegroundPermissionsAsync();
+        subscriber = await watchPositionAsync(
+          {
+            accuracy: Accuracy.BestForNavigation,
+            timeInterval: 1000,
+            distanceInterval: 10,
+          },
+          callback
+        );
+      } catch (e) {
+        setErr(e);
+      }
+    };
+
     if (shouldTrack) {
       startWatching();
     } else {
-      subscriber.remove();
-      setSubscriber(null);
+      if (subscriber) {
+        subscriber.remove();
+      }
+      subscriber = null;
     }
-  }, [shouldTrack]);
-  
-  return [err];
 
+    return () => {
+      if (subscriber) {
+        subscriber.remove();
+      }
+    };
+  }, [shouldTrack, callback]);
+
+  return [err];
 };
